@@ -115,173 +115,151 @@
 <script src="questions.js"></script>
 <script src="app.js"></script>
 <script>
-    // Tunggu sampai semua script loaded
-    window.addEventListener('DOMContentLoaded', function() {
-        initAdminPanel();
-    });
+    // Fungsi-fungsi admin
+    async function refreshParticipants() {
+        try {
+            const participants = await QuizApp.getParticipants();
+            const tbody = document.getElementById('participantsTableBody');
 
-    function initAdminPanel() {
-        // Cek apakah supabaseClient sudah ready
-        if (!window.supabaseClient) {
-            console.error('Supabase client not ready, retrying...');
-            setTimeout(initAdminPanel, 100);
-            return;
-        }
+            // Update stats
+            const stats = await QuizApp.getStatistics();
+            document.getElementById('totalParticipants').textContent = stats.total;
+            document.getElementById('waitingParticipants').textContent = stats.waiting;
+            document.getElementById('playingParticipants').textContent = stats.playing;
+            document.getElementById('finishedParticipants').textContent = stats.finished;
 
-        async function refreshParticipants() {
-            try {
-                const participants = await QuizApp.getParticipants();
-                const tbody = document.getElementById('participantsTableBody');
+            if (participants.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2"></i>
+                            <p>Belum ada peserta yang terdaftar</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
-                // Update stats
-                const stats = await QuizApp.getStatistics();
-                document.getElementById('totalParticipants').textContent = stats.total;
-                document.getElementById('waitingParticipants').textContent = stats.waiting;
-                document.getElementById('playingParticipants').textContent = stats.playing;
-                document.getElementById('finishedParticipants').textContent = stats.finished;
+            tbody.innerHTML = participants.map((p, index) => {
+                let statusBadge = '';
+                let actionBtn = '';
 
-                if (participants.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                                <i class="fas fa-inbox text-4xl mb-2"></i>
-                                <p>Belum ada peserta yang terdaftar</p>
-                            </td>
-                        </tr>
+                if (p.status === 'waiting') {
+                    statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Menunggu</span>';
+                    actionBtn = `
+                        <div class="flex space-x-2">
+                            <button onclick="startQuiz(${p.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold">
+                                <i class="fas fa-play mr-1"></i> Mulai
+                            </button>
+                            <button onclick="deleteParticipant(${p.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 text-sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     `;
-                    return;
+                } else if (p.status === 'playing') {
+                    statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Sedang Main</span>';
+                    actionBtn = `<button onclick="openDisplayForParticipant(${p.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold"><i class="fas fa-tv mr-1"></i> Lihat</button>`;
+                } else if (p.status === 'finished') {
+                    statusBadge = '<span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Selesai</span>';
+                    actionBtn = `
+                        <div class="flex space-x-2">
+                            <button onclick="viewResult(${p.id})" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold">
+                                <i class="fas fa-eye mr-1"></i> Hasil
+                            </button>
+                            <button onclick="deleteParticipant(${p.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 text-sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
                 }
 
-                tbody.innerHTML = participants.map((p, index) => {
-                    let statusBadge = '';
-                    let actionBtn = '';
-
-                    if (p.status === 'waiting') {
-                        statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Menunggu</span>';
-                        actionBtn = `
-                            <div class="flex space-x-2">
-                                <button onclick="window.startQuiz(${p.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold">
-                                    <i class="fas fa-play mr-1"></i> Mulai
-                                </button>
-                                <button onclick="window.deleteParticipant(${p.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 text-sm">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else if (p.status === 'playing') {
-                        statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Sedang Main</span>';
-                        actionBtn = `<button onclick="window.openDisplayForParticipant(${p.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold"><i class="fas fa-tv mr-1"></i> Lihat</button>`;
-                    } else if (p.status === 'finished') {
-                        statusBadge = '<span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Selesai</span>';
-                        actionBtn = `
-                            <div class="flex space-x-2">
-                                <button onclick="window.viewResult(${p.id})" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold">
-                                    <i class="fas fa-eye mr-1"></i> Hasil
-                                </button>
-                                <button onclick="window.deleteParticipant(${p.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 text-sm">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                    }
-
-                    return `
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm text-gray-900">${index + 1}</td>
-                            <td class="px-6 py-4 text-sm font-semibold text-gray-900">${p.nama}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">${p.noHp}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">${p.email}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">${p.instansi || '-'}</td>
-                            <td class="px-6 py-4">${statusBadge}</td>
-                            <td class="px-6 py-4 text-sm font-bold text-amber-600">${p.score || 0}</td>
-                            <td class="px-6 py-4">${actionBtn}</td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (error) {
-                console.error('Error refreshing participants:', error);
-                QuizApp.showToast('Gagal memuat data peserta', 'error');
-            }
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-900">${index + 1}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900">${p.nama}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${p.noHp}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${p.email}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${p.instansi || '-'}</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-amber-600">${p.score || 0}</td>
+                        <td class="px-6 py-4">${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error refreshing participants:', error);
         }
+    }
 
-        async function startQuiz(participantId) {
-            try {
-                // Generate random questions (7-10)
-                const numQuestions = Math.floor(Math.random() * 4) + 7;
-                const selectedQuestions = QuizApp.getRandomQuestions(numQuestions);
+    async function startQuiz(participantId) {
+        try {
+            const numQuestions = Math.floor(Math.random() * 4) + 7;
+            const selectedQuestions = QuizApp.getRandomQuestions(numQuestions);
 
-                await QuizApp.updateParticipant(participantId, {
-                    status: 'playing',
-                    questions: selectedQuestions,
-                    currentQuestion: 0,
-                    score: 0,
-                    answers: [],
-                    startedAt: new Date().toISOString()
-                });
+            await QuizApp.updateParticipant(participantId, {
+                status: 'playing',
+                questions: selectedQuestions,
+                currentQuestion: 0,
+                score: 0,
+                answers: [],
+                startedAt: new Date().toISOString()
+            });
 
-                localStorage.setItem('activeParticipantId', participantId);
-
-                QuizApp.showToast('Quiz berhasil dimulai!', 'success');
-                refreshParticipants();
-
-                // Open display page
-                window.open('display.html', 'tvDisplay');
-            } catch (error) {
-                console.error('Error starting quiz:', error);
-                QuizApp.showToast('Gagal memulai quiz', 'error');
-            }
-        }
-
-        function openDisplayForParticipant(participantId) {
             localStorage.setItem('activeParticipantId', participantId);
+            
+            alert('Quiz berhasil dimulai!');
+            refreshParticipants();
             window.open('display.html', 'tvDisplay');
+        } catch (error) {
+            console.error('Error starting quiz:', error);
+            alert('Gagal memulai quiz');
         }
+    }
 
-        async function viewResult(participantId) {
-            try {
-                const participant = await QuizApp.getParticipantById(participantId);
-                
-                if (!participant) {
-                    QuizApp.showToast('Peserta tidak ditemukan', 'error');
-                    return;
-                }
+    function openDisplayForParticipant(participantId) {
+        localStorage.setItem('activeParticipantId', participantId);
+        window.open('display.html', 'tvDisplay');
+    }
 
-                const totalQuestions = participant.questions?.length || 0;
-                const score = participant.score || 0;
-                const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
-
-                alert(`Hasil Quiz - ${participant.nama}\n\nTotal Soal: ${totalQuestions}\nBenar: ${score}\nSalah: ${totalQuestions - score}\nPersentase: ${percentage}%`);
-            } catch (error) {
-                console.error('Error viewing result:', error);
-                QuizApp.showToast('Gagal menampilkan hasil', 'error');
+    async function viewResult(participantId) {
+        try {
+            const participant = await QuizApp.getParticipantById(participantId);
+            
+            if (!participant) {
+                alert('Peserta tidak ditemukan');
+                return;
             }
+
+            const totalQuestions = participant.questions?.length || 0;
+            const score = participant.score || 0;
+            const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+
+            alert(`Hasil Quiz - ${participant.nama}\n\nTotal Soal: ${totalQuestions}\nBenar: ${score}\nSalah: ${totalQuestions - score}\nPersentase: ${percentage}%`);
+        } catch (error) {
+            console.error('Error viewing result:', error);
+            alert('Gagal menampilkan hasil');
         }
+    }
 
-        async function deleteParticipant(participantId) {
-            if (!confirm('Yakin ingin menghapus peserta ini?')) return;
+    async function deleteParticipant(participantId) {
+        if (!confirm('Yakin ingin menghapus peserta ini?')) return;
 
-            try {
-                const success = await QuizApp.deleteParticipant(participantId);
-                if (success) {
-                    QuizApp.showToast('Peserta berhasil dihapus', 'success');
-                    refreshParticipants();
-                } else {
-                    QuizApp.showToast('Gagal menghapus peserta', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting participant:', error);
-                QuizApp.showToast('Gagal menghapus peserta', 'error');
+        try {
+            const success = await QuizApp.deleteParticipant(participantId);
+            if (success) {
+                alert('Peserta berhasil dihapus');
+                refreshParticipants();
+            } else {
+                alert('Gagal menghapus peserta');
             }
+        } catch (error) {
+            console.error('Error deleting participant:', error);
+            alert('Gagal menghapus peserta');
         }
+    }
 
-        // Make functions globally accessible
-        window.refreshParticipants = refreshParticipants;
-        window.startQuiz = startQuiz;
-        window.openDisplayForParticipant = openDisplayForParticipant;
-        window.viewResult = viewResult;
-        window.deleteParticipant = deleteParticipant;
-
-        // Supabase Realtime listener untuk semua perubahan
+    // Realtime subscription
+    if (window.supabaseClient) {
         const adminChannel = window.supabaseClient
             .channel('admin-participants')
             .on('postgres_changes', 
@@ -293,20 +271,22 @@
             )
             .subscribe();
 
-        // Cleanup
         window.addEventListener('beforeunload', () => {
             window.supabaseClient.removeChannel(adminChannel);
         });
+    }
 
-        // Auto refresh every 3 seconds (backup)
-        setInterval(refreshParticipants, 3000);
-
-        // Initial load
+    // Auto refresh
+    setInterval(refreshParticipants, 3000);
+    
+    // Initial load - tunggu DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', refreshParticipants);
+    } else {
         refreshParticipants();
-        
-        console.log('Admin panel initialized successfully');
     }
 </script>
 </body>
 
 </html>
+
