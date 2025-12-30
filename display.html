@@ -126,213 +126,227 @@
 <script src="questions.js"></script>
 <script src="app.js"></script>
 <script>
-    let activeParticipant = null;
-    let currentQuestionIndex = 0;
+    window.addEventListener('DOMContentLoaded', function() {
+        initDisplayPanel();
+    });
 
-    const waitingScreen = document.getElementById('waitingScreen');
-    const questionScreen = document.getElementById('questionScreen');
-    const resultScreen = document.getElementById('resultScreen');
-
-    async function updateDisplay() {
-        const activeId = localStorage.getItem('activeParticipantId');
-        if (!activeId) {
-            showWaitingScreen();
+    function initDisplayPanel() {
+        if (!window.supabaseClient) {
+            console.error('Supabase client not ready, retrying...');
+            setTimeout(initDisplayPanel, 100);
             return;
         }
 
-        try {
-            const participant = await QuizApp.getParticipantById(parseInt(activeId));
+        let activeParticipant = null;
+        let currentQuestionIndex = 0;
 
-            if (!participant) {
+        const waitingScreen = document.getElementById('waitingScreen');
+        const questionScreen = document.getElementById('questionScreen');
+        const resultScreen = document.getElementById('resultScreen');
+
+        async function updateDisplay() {
+            const activeId = localStorage.getItem('activeParticipantId');
+            if (!activeId) {
                 showWaitingScreen();
                 return;
             }
 
-            activeParticipant = participant;
-            document.getElementById('participantName').textContent = participant.nama;
+            try {
+                const participant = await QuizApp.getParticipantById(parseInt(activeId));
 
-            if (participant.status === 'finished') {
-                showResultScreen();
-            } else if (participant.status === 'playing' && participant.questions) {
-                showQuestionScreen();
-            } else {
+                if (!participant) {
+                    showWaitingScreen();
+                    return;
+                }
+
+                activeParticipant = participant;
+                document.getElementById('participantName').textContent = participant.nama;
+
+                if (participant.status === 'finished') {
+                    showResultScreen();
+                } else if (participant.status === 'playing' && participant.questions) {
+                    showQuestionScreen();
+                } else {
+                    showWaitingScreen();
+                }
+            } catch (error) {
+                console.error('Error updating display:', error);
                 showWaitingScreen();
             }
-        } catch (error) {
-            console.error('Error updating display:', error);
-            showWaitingScreen();
         }
-    }
 
-    function showWaitingScreen() {
-        waitingScreen.classList.remove('hidden');
-        questionScreen.classList.add('hidden');
-        resultScreen.classList.add('hidden');
-    }
+        function showWaitingScreen() {
+            waitingScreen.classList.remove('hidden');
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+        }
 
-    function showQuestionScreen() {
-        waitingScreen.classList.add('hidden');
-        questionScreen.classList.remove('hidden');
-        resultScreen.classList.add('hidden');
+        function showQuestionScreen() {
+            waitingScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
 
-        if (!activeParticipant || !activeParticipant.questions) return;
+            if (!activeParticipant || !activeParticipant.questions) return;
 
-        currentQuestionIndex = activeParticipant.currentQuestion || 0;
-        const questions = activeParticipant.questions;
-        const currentQ = questions[currentQuestionIndex];
+            currentQuestionIndex = activeParticipant.currentQuestion || 0;
+            const questions = activeParticipant.questions;
+            const currentQ = questions[currentQuestionIndex];
 
-        document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
-        document.getElementById('totalQuestions').textContent = questions.length;
-        document.getElementById('currentScore').textContent = activeParticipant.score || 0;
+            document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('currentScore').textContent = activeParticipant.score || 0;
 
-        const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-        document.getElementById('progressBar').style.width = progress + '%';
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
 
-        document.getElementById('questionText').textContent = currentQ.question;
+            document.getElementById('questionText').textContent = currentQ.question;
 
-        // Display options
-        const optionsContainer = document.getElementById('optionsContainer');
-        const labels = ['A', 'B', 'C', 'D'];
-        
-        optionsContainer.innerHTML = currentQ.options.map((option, index) => {
-            const answer = activeParticipant.answers?.find(a => a.questionIndex === currentQuestionIndex);
-            let optionClass = 'bg-gray-50 border-4 border-gray-300';
-            let icon = '';
+            const optionsContainer = document.getElementById('optionsContainer');
+            const labels = ['A', 'B', 'C', 'D'];
+            
+            optionsContainer.innerHTML = currentQ.options.map((option, index) => {
+                const answer = activeParticipant.answers?.find(a => a.questionIndex === currentQuestionIndex);
+                let optionClass = 'bg-gray-50 border-4 border-gray-300';
+                let icon = '';
 
-            if (answer) {
-                if (index === currentQ.correct) {
-                    optionClass = 'bg-green-100 border-4 border-green-500';
-                    icon = '<i class="fas fa-check-circle text-green-500 text-4xl"></i>';
-                } else if (index === answer.selected && !answer.isCorrect) {
-                    optionClass = 'bg-red-100 border-4 border-red-500';
-                    icon = '<i class="fas fa-times-circle text-red-500 text-4xl"></i>';
+                if (answer) {
+                    if (index === currentQ.correct) {
+                        optionClass = 'bg-green-100 border-4 border-green-500';
+                        icon = '<i class="fas fa-check-circle text-green-500 text-4xl"></i>';
+                    } else if (index === answer.selected && !answer.isCorrect) {
+                        optionClass = 'bg-red-100 border-4 border-red-500';
+                        icon = '<i class="fas fa-times-circle text-red-500 text-4xl"></i>';
+                    }
                 }
-            }
 
-            return `
-                <div class="${optionClass} rounded-xl p-8 transition-all duration-300">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-6">
-                            <div class="bg-amber-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0">
-                                ${labels[index]}
+                return `
+                    <div class="${optionClass} rounded-xl p-8 transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-6">
+                                <div class="bg-amber-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0">
+                                    ${labels[index]}
+                                </div>
+                                <p class="text-3xl font-semibold text-gray-800">${option}</p>
                             </div>
-                            <p class="text-3xl font-semibold text-gray-800">${option}</p>
-                        </div>
-                        <div>
-                            ${icon}
+                            <div>
+                                ${icon}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
 
-        // Update button states
-        document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-        const nextBtn = document.getElementById('nextBtn');
-        nextBtn.innerHTML = currentQuestionIndex === questions.length - 1 
-            ? 'Selesai <i class="fas fa-check ml-2"></i>' 
-            : 'Selanjutnya <i class="fas fa-arrow-right ml-2"></i>';
-    }
-
-    function showResultScreen() {
-        waitingScreen.classList.add('hidden');
-        questionScreen.classList.add('hidden');
-        resultScreen.classList.remove('hidden');
-
-        if (!activeParticipant) return;
-
-        const totalQuestions = activeParticipant.questions?.length || 0;
-        const score = activeParticipant.score || 0;
-        const wrong = totalQuestions - score;
-
-        document.getElementById('finalScore').textContent = score;
-        document.getElementById('totalQuestionsResult').textContent = totalQuestions;
-        document.getElementById('correctAnswers').textContent = score;
-        document.getElementById('wrongAnswers').textContent = wrong;
-    }
-
-    function nextQuestion() {
-        if (!activeParticipant || !activeParticipant.questions) return;
-
-        if (currentQuestionIndex < activeParticipant.questions.length - 1) {
-            currentQuestionIndex++;
-            updateParticipantQuestion(currentQuestionIndex);
-        } else {
-            finishQuiz();
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.innerHTML = currentQuestionIndex === questions.length - 1 
+                ? 'Selesai <i class="fas fa-check ml-2"></i>' 
+                : 'Selanjutnya <i class="fas fa-arrow-right ml-2"></i>';
         }
-    }
 
-    function previousQuestion() {
-        if (currentQuestionIndex > 0) {
-            currentQuestionIndex--;
-            updateParticipantQuestion(currentQuestionIndex);
+        function showResultScreen() {
+            waitingScreen.classList.add('hidden');
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            if (!activeParticipant) return;
+
+            const totalQuestions = activeParticipant.questions?.length || 0;
+            const score = activeParticipant.score || 0;
+            const wrong = totalQuestions - score;
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('totalQuestionsResult').textContent = totalQuestions;
+            document.getElementById('correctAnswers').textContent = score;
+            document.getElementById('wrongAnswers').textContent = wrong;
         }
-    }
 
-    async function updateParticipantQuestion(questionIndex) {
-        try {
-            await QuizApp.updateParticipant(activeParticipant.id, {
-                currentQuestion: questionIndex
+        async function nextQuestion() {
+            if (!activeParticipant || !activeParticipant.questions) return;
+
+            if (currentQuestionIndex < activeParticipant.questions.length - 1) {
+                currentQuestionIndex++;
+                updateParticipantQuestion(currentQuestionIndex);
+            } else {
+                finishQuiz();
+            }
+        }
+
+        async function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                updateParticipantQuestion(currentQuestionIndex);
+            }
+        }
+
+        async function updateParticipantQuestion(questionIndex) {
+            try {
+                await QuizApp.updateParticipant(activeParticipant.id, {
+                    currentQuestion: questionIndex
+                });
+                await updateDisplay();
+            } catch (error) {
+                console.error('Error updating question:', error);
+            }
+        }
+
+        async function finishQuiz() {
+            try {
+                await QuizApp.updateParticipant(activeParticipant.id, {
+                    status: 'finished',
+                    finishedAt: new Date().toISOString()
+                });
+                await updateDisplay();
+            } catch (error) {
+                console.error('Error finishing quiz:', error);
+            }
+        }
+
+        function backToWaiting() {
+            localStorage.removeItem('activeParticipantId');
+            updateDisplay();
+        }
+
+        // Make functions global
+        window.nextQuestion = nextQuestion;
+        window.previousQuestion = previousQuestion;
+        window.backToWaiting = backToWaiting;
+
+        // Supabase Realtime listener
+        const activeId = localStorage.getItem('activeParticipantId');
+        if (activeId) {
+            const displayChannel = window.supabaseClient
+                .channel(`display-${activeId}`)
+                .on('postgres_changes', 
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'participants',
+                        filter: `id=eq.${activeId}`
+                    },
+                    async (payload) => {
+                        console.log('Display updated:', payload);
+                        await updateDisplay();
+                    }
+                )
+                .subscribe();
+
+            window.addEventListener('beforeunload', () => {
+                window.supabaseClient.removeChannel(displayChannel);
             });
-            await updateDisplay();
-        } catch (error) {
-            console.error('Error updating question:', error);
         }
-    }
 
-    async function finishQuiz() {
-        try {
-            await QuizApp.updateParticipant(activeParticipant.id, {
-                status: 'finished',
-                finishedAt: new Date().toISOString()
-            });
-            await updateDisplay();
-        } catch (error) {
-            console.error('Error finishing quiz:', error);
-        }
-    }
-
-    function backToWaiting() {
-        localStorage.removeItem('activeParticipantId');
+        setInterval(updateDisplay, 2000);
         updateDisplay();
-    }
 
-    // Supabase Realtime listener
-    const activeId = localStorage.getItem('activeParticipantId');
-    if (activeId) {
-        const displayChannel = supabaseClient
-            .channel(`display-${activeId}`)
-            .on('postgres_changes', 
-                { 
-                    event: 'UPDATE', 
-                    schema: 'public', 
-                    table: 'participants',
-                    filter: `id=eq.${activeId}`
-                },
-                async (payload) => {
-                    console.log('Display updated:', payload);
-                    await updateDisplay();
-                }
-            )
-            .subscribe();
-
-        window.addEventListener('beforeunload', () => {
-            supabaseClient.removeChannel(displayChannel);
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'activeParticipantId') {
+                location.reload();
+            }
         });
+
+        console.log('Display panel initialized successfully');
     }
-
-    // Auto update every 2 seconds (backup)
-    setInterval(updateDisplay, 2000);
-
-    // Initial load
-    updateDisplay();
-
-    // Listen to storage events for activeParticipantId changes
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'activeParticipantId') {
-            location.reload(); // Reload jika active participant berubah
-        }
-    });
 </script>
 </body>
+
 </html>
