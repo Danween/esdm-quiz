@@ -512,7 +512,4 @@ if (supabaseClient) {
 
 // Make QuizApp and supabaseClient available globally
 window.QuizApp = QuizApp;
-window.supabaseClient = supabaseClient; // INI PENTING!
-
-console.log('QuizApp loaded:', window.QuizApp ? 'YES' : 'NO');
-console.log('supabaseClient loaded:', window.supabaseClient ? 'YES' : 'NO');
+window.supabaseClient = supabaseClient;
