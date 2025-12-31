@@ -7,136 +7,333 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            /* ========================================
+               SCALE CONTROL - Ubah nilai ini untuk mengatur ukuran
+               Default: 1 (100%)
+               Contoh: 0.8 = 80%, 1.2 = 120%, 1.5 = 150%
+            ======================================== */
+            --scale: 1;
+            
+            /* Calculated scales - jangan diubah */
+            --scale-xs: calc(0.75rem * var(--scale));
+            --scale-sm: calc(0.875rem * var(--scale));
+            --scale-base: calc(1rem * var(--scale));
+            --scale-lg: calc(1.125rem * var(--scale));
+            --scale-xl: calc(1.25rem * var(--scale));
+            --scale-2xl: calc(1.5rem * var(--scale));
+            --scale-3xl: calc(1.875rem * var(--scale));
+            --scale-4xl: calc(2.25rem * var(--scale));
+            --scale-5xl: calc(3rem * var(--scale));
+            --scale-6xl: calc(3.75rem * var(--scale));
+            --scale-7xl: calc(4.5rem * var(--scale));
+            --scale-8xl: calc(6rem * var(--scale));
+            --scale-9xl: calc(8rem * var(--scale));
+            
+            /* Spacing scales */
+            --space-1: calc(0.25rem * var(--scale));
+            --space-2: calc(0.5rem * var(--scale));
+            --space-3: calc(0.75rem * var(--scale));
+            --space-4: calc(1rem * var(--scale));
+            --space-5: calc(1.25rem * var(--scale));
+            --space-6: calc(1.5rem * var(--scale));
+            --space-8: calc(2rem * var(--scale));
+            --space-10: calc(2.5rem * var(--scale));
+            --space-12: calc(3rem * var(--scale));
+            
+            /* Icon/element sizes */
+            --icon-sm: calc(2rem * var(--scale));
+            --icon-md: calc(3rem * var(--scale));
+            --icon-lg: calc(4rem * var(--scale));
+            --icon-xl: calc(5rem * var(--scale));
+            --icon-2xl: calc(6rem * var(--scale));
+        }
+        
+        /* Scalable text classes */
+        .text-scaled-xs { font-size: var(--scale-xs); }
+        .text-scaled-sm { font-size: var(--scale-sm); }
+        .text-scaled-base { font-size: var(--scale-base); }
+        .text-scaled-lg { font-size: var(--scale-lg); }
+        .text-scaled-xl { font-size: var(--scale-xl); }
+        .text-scaled-2xl { font-size: var(--scale-2xl); }
+        .text-scaled-3xl { font-size: var(--scale-3xl); }
+        .text-scaled-4xl { font-size: var(--scale-4xl); }
+        .text-scaled-5xl { font-size: var(--scale-5xl); }
+        .text-scaled-6xl { font-size: var(--scale-6xl); }
+        .text-scaled-7xl { font-size: var(--scale-7xl); }
+        .text-scaled-8xl { font-size: var(--scale-8xl); }
+        .text-scaled-9xl { font-size: var(--scale-9xl); }
+        
+        /* Scalable padding classes */
+        .p-scaled-4 { padding: var(--space-4); }
+        .p-scaled-5 { padding: var(--space-5); }
+        .p-scaled-6 { padding: var(--space-6); }
+        .p-scaled-8 { padding: var(--space-8); }
+        .p-scaled-12 { padding: var(--space-12); }
+        .px-scaled-4 { padding-left: var(--space-4); padding-right: var(--space-4); }
+        .py-scaled-2 { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+        
+        /* Scalable margin classes */
+        .mb-scaled-2 { margin-bottom: var(--space-2); }
+        .mb-scaled-3 { margin-bottom: var(--space-3); }
+        .mb-scaled-4 { margin-bottom: var(--space-4); }
+        .mb-scaled-6 { margin-bottom: var(--space-6); }
+        .mb-scaled-8 { margin-bottom: var(--space-8); }
+        
+        /* Scalable gap */
+        .gap-scaled-4 { gap: var(--space-4); }
+        .space-x-scaled-4 > * + * { margin-left: var(--space-4); }
+        
+        /* Scalable icons */
+        .icon-scaled-sm { width: var(--icon-sm); height: var(--icon-sm); }
+        .icon-scaled-md { width: var(--icon-md); height: var(--icon-md); }
+        .icon-scaled-lg { width: var(--icon-lg); height: var(--icon-lg); }
+        .icon-scaled-xl { width: var(--icon-xl); height: var(--icon-xl); }
+        .icon-scaled-2xl { width: var(--icon-2xl); height: var(--icon-2xl); }
+        
+        /* Scalable border radius */
+        .rounded-scaled { border-radius: calc(0.75rem * var(--scale)); }
+        .rounded-scaled-xl { border-radius: calc(1rem * var(--scale)); }
+        .rounded-scaled-full { border-radius: 9999px; }
+        
+        /* Scalable heights */
+        .h-scaled-3 { height: calc(0.75rem * var(--scale)); }
+        
+        /* Scale control panel */
+        .scale-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .scale-control label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        .scale-control input[type="range"] {
+            width: 120px;
+            cursor: pointer;
+        }
+        .scale-control .scale-value {
+            font-weight: bold;
+            color: #2563eb;
+            min-width: 45px;
+            text-align: center;
+        }
+        .scale-control button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .scale-control button:hover {
+            background: #1d4ed8;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-amber-600 to-amber-900 min-h-screen p-8">
-    <!-- Header -->
-    <div class="bg-white rounded-2xl shadow-2xl mb-8 p-8">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <div class="bg-amber-600 rounded-full w-20 h-20 flex items-center justify-center">
-                    <i class="fas fa-bolt text-white text-4xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-4xl font-bold text-gray-800">Quiz ESDM</h1>
-                    <p class="text-gray-600 text-lg">Dinas ESDM Provinsi Jambi</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="text-gray-600">Peserta:</p>
-                <p class="text-3xl font-bold text-amber-600" id="participantName">-</p>
-            </div>
-        </div>
+<body class="min-h-screen bg-[url('/image/esdm.jpg')] bg-cover bg-center bg-no-repeat">
+    <!-- Scale Control Panel -->
+    <div class="scale-control" id="scaleControl">
+        <label>Scale:</label>
+        <input type="range" id="scaleSlider" min="0.5" max="2" step="0.05" value="1">
+        <span class="scale-value" id="scaleValue">100%</span>
+        <button onclick="resetScale()">Reset</button>
+        <button onclick="toggleControlPanel()" title="Sembunyikan">✕</button>
     </div>
+    
+    <!-- Toggle button when panel is hidden -->
+    <button id="showScaleBtn" onclick="toggleControlPanel()" 
+        class="fixed bottom-5 right-5 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hidden hover:bg-blue-700">
+        <i class="fas fa-sliders-h"></i>
+    </button>
 
-    <!-- Waiting Screen -->
-    <div id="waitingScreen" class="text-center">
-        <div class="bg-white rounded-2xl shadow-2xl p-16">
-            <i class="fas fa-hourglass-half text-amber-600 text-9xl mb-8 animate-pulse"></i>
-            <h2 class="text-5xl font-bold text-gray-800 mb-4">Menunggu Quiz Dimulai...</h2>
-            <p class="text-2xl text-gray-600">Silakan scan QR Code untuk bergabung</p>
+    <div class="min-h-screen grid place-items-center quizesdm">
+        <div class="max-w-7xl w-full p-scaled-4">
+            <!-- Header -->
+            <div class="bg-white/50 backdrop-blur-lg rounded-scaled-xl shadow-xl p-scaled-5 mb-scaled-6 border border-white/30">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-scaled-4">
+                        <div class="bg-blue-600 rounded-scaled-full icon-scaled-lg flex items-center justify-center">
+                            <i class="fas fa-bolt text-white text-scaled-3xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-scaled-3xl font-bold text-white">Quiz ESDM</h1>
+                            <p class="text-gray-100 text-scaled-base">Dinas ESDM Provinsi Jambi</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-white text-scaled-base">Peserta:</p>
+                        <p class="text-scaled-2xl font-bold text-blue-600" id="participantName">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting Screen -->
+            <div id="waitingScreen" class="text-center">
+                <div class="bg-white rounded-scaled-xl shadow-xl p-scaled-12">
+                    <i class="fas fa-hourglass-half text-blue-600 text-scaled-7xl mb-scaled-6 animate-pulse"></i>
+                    <h2 class="text-scaled-4xl font-bold text-gray-800 mb-scaled-4">Menunggu Quiz Dimulai...</h2>
+                    <p class="text-scaled-xl text-gray-600">Silakan scan QR Code untuk bergabung</p>
+                </div>
+            </div>
+
+            <!-- Question Screen -->
+            <div id="questionScreen" class="hidden">
+                <!-- Progress and Info -->
+                <div class="bg-white/50 backdrop-blur-lg rounded-scaled-xl shadow-xl p-scaled-5 mb-scaled-6 border border-white/30">
+                    <div class="flex justify-between items-center mb-scaled-3">
+                        <div>
+                            <p class="text-white text-scaled-base">Pertanyaan</p>
+                            <p class="text-scaled-2xl font-bold text-white">
+                                <span id="currentQuestionNum">1</span> / <span id="totalQuestions">10</span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white text-scaled-base">Skor Saat Ini</p>
+                            <p class="text-scaled-4xl font-bold text-blue-600" id="currentScore">0</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-200 rounded-full h-scaled-3 overflow-hidden">
+                        <div id="progressBar" class="bg-blue-600 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Question Card -->
+                <div class="bg-white rounded-scaled-xl shadow-xl p-scaled-8 mb-scaled-6">
+                    <div class="mb-scaled-6">
+                        <div class="inline-block bg-blue-100 text-blue-700 px-scaled-4 py-scaled-2 rounded-full text-scaled-lg font-semibold">
+                            <i class="fas fa-question-circle mr-2"></i>
+                            Pertanyaan
+                        </div>
+                    </div>
+                    <h2 class="text-scaled-3xl font-bold text-gray-800 mb-scaled-8 leading-tight" id="questionText">-</h2>
+
+                    <!-- Options Grid -->
+                    <div class="grid grid-cols-2 gap-scaled-4" id="optionsContainer">
+                        <!-- Options will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="resultScreen" class="hidden">
+                <div class="bg-white rounded-scaled-xl shadow-xl p-scaled-12 text-center">
+                    <i class="fas fa-trophy text-blue-600 text-scaled-7xl mb-scaled-6"></i>
+                    <h2 class="text-scaled-4xl font-bold text-gray-800 mb-scaled-6">Quiz Selesai!</h2>
+                    
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-scaled-xl p-scaled-8 mb-scaled-6">
+                        <p class="text-scaled-2xl mb-scaled-2">Skor Akhir</p>
+                        <p class="text-scaled-7xl font-bold" id="finalScore">0</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-scaled-4 mb-scaled-6">
+                        <div class="bg-blue-50 rounded-scaled-xl p-scaled-4">
+                            <p class="text-gray-600 mb-scaled-2 text-scaled-base">Total Soal</p>
+                            <p class="text-scaled-3xl font-bold text-blue-600" id="totalQuestionsResult">0</p>
+                        </div>
+                        <div class="bg-green-50 rounded-scaled-xl p-scaled-4">
+                            <p class="text-gray-600 mb-scaled-2 text-scaled-base">Benar</p>
+                            <p class="text-scaled-3xl font-bold text-green-600" id="correctAnswers">0</p>
+                        </div>
+                        <div class="bg-red-50 rounded-scaled-xl p-scaled-4">
+                            <p class="text-gray-600 mb-scaled-2 text-scaled-base">Salah</p>
+                            <p class="text-scaled-3xl font-bold text-red-600" id="wrongAnswers">0</p>
+                        </div>
+                    </div>
+
+                    <p class="text-scaled-2xl text-gray-600 mb-scaled-6">Terima kasih telah mengikuti quiz!</p>
+                    
+                    <button onclick="backToWaiting()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-scaled-xl shadow-lg transition duration-300 text-scaled-xl">
+                        <i class="fas fa-home mr-2"></i>
+                        Kembali
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </div>    
 
-    <!-- Question Screen -->
-    <div id="questionScreen" class="hidden">
-        <!-- Progress and Info -->
-        <div class="bg-white rounded-2xl shadow-2xl p-6 mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <p class="text-gray-600 text-lg">Pertanyaan</p>
-                    <p class="text-3xl font-bold text-gray-800">
-                        <span id="currentQuestionNum">1</span> / <span id="totalQuestions">10</span>
-                    </p>
-                </div>
-                <div class="text-right">
-                    <p class="text-gray-600 text-lg">Skor Saat Ini</p>
-                    <p class="text-5xl font-bold text-amber-600" id="currentScore">0</p>
-                </div>
-            </div>
-            <div class="bg-gray-200 rounded-full h-4 overflow-hidden">
-                <div id="progressBar" class="bg-amber-600 h-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-        </div>
+    <script>
+        // Scale Control Functions
+        const scaleSlider = document.getElementById('scaleSlider');
+        const scaleValue = document.getElementById('scaleValue');
+        const scaleControl = document.getElementById('scaleControl');
+        const showScaleBtn = document.getElementById('showScaleBtn');
+        
+        // Load saved scale from localStorage
+        const savedScale = localStorage.getItem('quizDisplayScale');
+        if (savedScale) {
+            document.documentElement.style.setProperty('--scale', savedScale);
+            scaleSlider.value = savedScale;
+            scaleValue.textContent = Math.round(savedScale * 100) + '%';
+        }
+        
+        // Load panel visibility
+        const panelHidden = localStorage.getItem('scaleControlHidden') === 'true';
+        if (panelHidden) {
+            scaleControl.classList.add('hidden');
+            showScaleBtn.classList.remove('hidden');
+        }
+        
+        scaleSlider.addEventListener('input', function() {
+            const scale = this.value;
+            document.documentElement.style.setProperty('--scale', scale);
+            scaleValue.textContent = Math.round(scale * 100) + '%';
+            localStorage.setItem('quizDisplayScale', scale);
+        });
+        
+        function resetScale() {
+            document.documentElement.style.setProperty('--scale', '1');
+            scaleSlider.value = 1;
+            scaleValue.textContent = '100%';
+            localStorage.setItem('quizDisplayScale', '1');
+        }
+        
+        function toggleControlPanel() {
+            const isHidden = scaleControl.classList.toggle('hidden');
+            showScaleBtn.classList.toggle('hidden', !isHidden);
+            localStorage.setItem('scaleControlHidden', isHidden);
+        }
+        
+        // Keyboard shortcut: Press 'S' to toggle scale control
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 's' || e.key === 'S') {
+                if (!e.ctrlKey && !e.metaKey) { // Don't trigger on Ctrl+S
+                    toggleControlPanel();
+                }
+            }
+        });
+    </script>
 
-        <!-- Question Card -->
-        <div class="bg-white rounded-2xl shadow-2xl p-12 mb-8">
-            <div class="mb-8">
-                <div class="inline-block bg-amber-100 text-amber-700 px-6 py-2 rounded-full text-xl font-semibold mb-6">
-                    <i class="fas fa-question-circle mr-2"></i>
-                    Pertanyaan
-                </div>
-            </div>
-            <h2 class="text-5xl font-bold text-gray-800 mb-12 leading-tight" id="questionText">-</h2>
+    <script>
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
 
-            <!-- Options Grid -->
-            <div class="grid grid-cols-1 gap-6" id="optionsContainer">
-                <!-- Options will be inserted here -->
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="flex justify-between">
-            <button onclick="previousQuestion()" id="prevBtn" class="bg-white hover:bg-gray-100 text-gray-800 font-bold py-4 px-8 rounded-xl shadow-lg transition duration-300 text-xl">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Sebelumnya
-            </button>
-            <button onclick="nextQuestion()" id="nextBtn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition duration-300 text-xl">
-                Selanjutnya
-                <i class="fas fa-arrow-right ml-2"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Result Screen -->
-    <div id="resultScreen" class="hidden">
-        <div class="bg-white rounded-2xl shadow-2xl p-16 text-center">
-            <i class="fas fa-trophy text-amber-600 text-9xl mb-8"></i>
-            <h2 class="text-6xl font-bold text-gray-800 mb-8">Quiz Selesai!</h2>
-            
-            <div class="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-2xl p-12 mb-8">
-                <p class="text-3xl mb-4">Skor Akhir</p>
-                <p class="text-9xl font-bold" id="finalScore">0</p>
-            </div>
-
-            <div class="grid grid-cols-3 gap-6 mb-8">
-                <div class="bg-blue-50 rounded-xl p-6">
-                    <p class="text-gray-600 text-xl mb-2">Total Soal</p>
-                    <p class="text-4xl font-bold text-blue-600" id="totalQuestionsResult">0</p>
-                </div>
-                <div class="bg-green-50 rounded-xl p-6">
-                    <p class="text-gray-600 text-xl mb-2">Benar</p>
-                    <p class="text-4xl font-bold text-green-600" id="correctAnswers">0</p>
-                </div>
-                <div class="bg-red-50 rounded-xl p-6">
-                    <p class="text-gray-600 text-xl mb-2">Salah</p>
-                    <p class="text-4xl font-bold text-red-600" id="wrongAnswers">0</p>
-                </div>
-            </div>
-
-            <p class="text-3xl text-gray-600 mb-8">Terima kasih telah mengikuti quiz!</p>
-            
-            <button onclick="backToWaiting()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-12 rounded-xl shadow-lg transition duration-300 text-2xl">
-                <i class="fas fa-home mr-2"></i>
-                Kembali
-            </button>
-        </div>
-    </div>
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="questions.js"></script>
-<script src="app.js"></script>
-<script>
-    window.addEventListener('DOMContentLoaded', function() {
-        initDisplayPanel();
-    });
-
-    function initDisplayPanel() {
-        if (!window.supabaseClient) {
-            console.error('Supabase client not ready, retrying...');
-            setTimeout(initDisplayPanel, 100);
-            return;
-        }
-
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+    <script>
         let activeParticipant = null;
         let currentQuestionIndex = 0;
 
@@ -201,32 +398,33 @@
 
             document.getElementById('questionText').textContent = currentQ.question;
 
+            // Display options with scaled classes
             const optionsContainer = document.getElementById('optionsContainer');
             const labels = ['A', 'B', 'C', 'D'];
             
             optionsContainer.innerHTML = currentQ.options.map((option, index) => {
                 const answer = activeParticipant.answers?.find(a => a.questionIndex === currentQuestionIndex);
-                let optionClass = 'bg-gray-50 border-4 border-gray-300';
+                let optionClass = 'bg-gray-50 border-2 border-gray-200';
                 let icon = '';
 
                 if (answer) {
                     if (index === currentQ.correct) {
-                        optionClass = 'bg-green-100 border-4 border-green-500';
-                        icon = '<i class="fas fa-check-circle text-green-500 text-4xl"></i>';
+                        optionClass = 'bg-green-100 border-2 border-green-500';
+                        icon = '<i class="fas fa-check-circle text-green-500 text-scaled-3xl"></i>';
                     } else if (index === answer.selected && !answer.isCorrect) {
-                        optionClass = 'bg-red-100 border-4 border-red-500';
-                        icon = '<i class="fas fa-times-circle text-red-500 text-4xl"></i>';
+                        optionClass = 'bg-red-100 border-2 border-red-500';
+                        icon = '<i class="fas fa-times-circle text-red-500 text-scaled-3xl"></i>';
                     }
                 }
 
                 return `
-                    <div class="${optionClass} rounded-xl p-8 transition-all duration-300">
+                    <div class="${optionClass} rounded-scaled-xl p-scaled-5 transition-all duration-300">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-6">
-                                <div class="bg-amber-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0">
+                            <div class="flex items-center space-x-scaled-4">
+                                <div class="bg-blue-600 text-white icon-scaled-md rounded-scaled-full flex items-center justify-center text-scaled-xl font-bold flex-shrink-0">
                                     ${labels[index]}
                                 </div>
-                                <p class="text-3xl font-semibold text-gray-800">${option}</p>
+                                <p class="text-scaled-xl font-semibold text-gray-800">${option}</p>
                             </div>
                             <div>
                                 ${icon}
@@ -235,12 +433,6 @@
                     </div>
                 `;
             }).join('');
-
-            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-            const nextBtn = document.getElementById('nextBtn');
-            nextBtn.innerHTML = currentQuestionIndex === questions.length - 1 
-                ? 'Selesai <i class="fas fa-check ml-2"></i>' 
-                : 'Selanjutnya <i class="fas fa-arrow-right ml-2"></i>';
         }
 
         function showResultScreen() {
@@ -260,61 +452,15 @@
             document.getElementById('wrongAnswers').textContent = wrong;
         }
 
-        async function nextQuestion() {
-            if (!activeParticipant || !activeParticipant.questions) return;
-
-            if (currentQuestionIndex < activeParticipant.questions.length - 1) {
-                currentQuestionIndex++;
-                updateParticipantQuestion(currentQuestionIndex);
-            } else {
-                finishQuiz();
-            }
-        }
-
-        async function previousQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                updateParticipantQuestion(currentQuestionIndex);
-            }
-        }
-
-        async function updateParticipantQuestion(questionIndex) {
-            try {
-                await QuizApp.updateParticipant(activeParticipant.id, {
-                    currentQuestion: questionIndex
-                });
-                await updateDisplay();
-            } catch (error) {
-                console.error('Error updating question:', error);
-            }
-        }
-
-        async function finishQuiz() {
-            try {
-                await QuizApp.updateParticipant(activeParticipant.id, {
-                    status: 'finished',
-                    finishedAt: new Date().toISOString()
-                });
-                await updateDisplay();
-            } catch (error) {
-                console.error('Error finishing quiz:', error);
-            }
-        }
-
         function backToWaiting() {
             localStorage.removeItem('activeParticipantId');
             updateDisplay();
         }
 
-        // Make functions global
-        window.nextQuestion = nextQuestion;
-        window.previousQuestion = previousQuestion;
-        window.backToWaiting = backToWaiting;
-
         // Supabase Realtime listener
         const activeId = localStorage.getItem('activeParticipantId');
         if (activeId) {
-            const displayChannel = window.supabaseClient
+            const displayChannel = supabaseClient
                 .channel(`display-${activeId}`)
                 .on('postgres_changes', 
                     { 
@@ -331,22 +477,22 @@
                 .subscribe();
 
             window.addEventListener('beforeunload', () => {
-                window.supabaseClient.removeChannel(displayChannel);
+                supabaseClient.removeChannel(displayChannel);
             });
         }
 
+        // Auto update every 2 seconds (backup)
         setInterval(updateDisplay, 2000);
+
+        // Initial load
         updateDisplay();
 
+        // Listen to storage events for activeParticipantId changes
         window.addEventListener('storage', (e) => {
             if (e.key === 'activeParticipantId') {
                 location.reload();
             }
         });
-
-        console.log('Display panel initialized successfully');
-    }
-</script>
+    </script>
 </body>
-
 </html>
