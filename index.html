@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen bg-[url('./image/esdm.jpg')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
-    <div class="max-w-lg w-full">
+    <div class="max-w-lg md:max-w-2xl w-full">
         <!-- Logo/Header - 2 Columns -->
         <div class="bg-white/50 backdrop-blur-lg rounded-2xl shadow-xl p-6 mb-6 border border-white/30">
             <div class="flex items-center gap-6">
@@ -36,11 +36,24 @@
 
         <!-- Main Card -->
         <div class="bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/30">
-            <!-- Description Box -->
+            <!-- Description Box with 2 Columns -->
             <div class="mb-8">
                 <div class="bg-white/80 backdrop-blur rounded-xl p-6 border border-blue-200">
-                    <div class="flex items-start gap-4">
-                        <div>
+                    <div class="flex items-start gap-6">
+                        <!-- Left Column - QR Code (Desktop Only) -->
+                        <div class="hidden md:flex flex-shrink-0">
+                            <div class="bg-white rounded-xl p-3 shadow-md border border-gray-200">
+                                <img 
+                                    src="./image/qrcode.png" 
+                                    alt="QR Code" 
+                                    class="w-32 h-32 object-contain"
+                                    onerror="this.parentElement.innerHTML='<div class=\'w-32 h-32 flex items-center justify-center bg-gray-100 rounded-lg\'><i class=\'fas fa-qrcode text-gray-400 text-5xl\'></i></div><p class=\'text-center text-xs text-gray-500 mt-2 font-medium\'>Scan untuk bergabung</p>';"
+                                >
+                                <p class="text-center text-xs text-gray-500 mt-2 font-medium">Scan untuk bergabung</p>
+                            </div>
+                        </div>
+                        <!-- Right Column - Description -->
+                        <div class="flex-1">
                             <h2 class="text-xl font-bold text-gray-800 mb-2">Tentang Quiz Ini</h2>
                             <p class="text-gray-600 text-sm leading-relaxed">
                                 Quiz interaktif seputar Energi dan Sumber Daya Mineral (ESDM). 
@@ -98,8 +111,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
