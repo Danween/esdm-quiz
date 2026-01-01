@@ -517,6 +517,7 @@ window.supabaseClient = supabaseClient;
 const routes = {
   "/": "index.html",
   "/quiz": "quiz.html",
+    "/register": "register.html",
   "/ready": "ready.html"
 };
 
@@ -544,3 +545,4 @@ window.addEventListener("popstate", router);
 
 // Load pertama
 router();
+
