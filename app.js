@@ -513,3 +513,34 @@ if (supabaseClient) {
 // Make QuizApp and supabaseClient available globally
 window.QuizApp = QuizApp;
 window.supabaseClient = supabaseClient;
+
+const routes = {
+  "/": "index.html",
+  "/quiz": "quiz.html",
+  "/ready": "ready.html"
+};
+
+async function router() {
+  const path = window.location.pathname;
+  const page = routes[path] || routes["/"];
+
+  const response = await fetch(page);
+  const html = await response.text();
+
+  document.getElementById("app").innerHTML = html;
+}
+
+// Navigasi tanpa reload
+document.addEventListener("click", e => {
+  if (e.target.matches("[data-link]")) {
+    e.preventDefault();
+    history.pushState(null, "", e.target.href);
+    router();
+  }
+});
+
+// Back / Forward browser
+window.addEventListener("popstate", router);
+
+// Load pertama
+router();
