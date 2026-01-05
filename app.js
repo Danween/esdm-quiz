@@ -2,10 +2,6 @@
 // Dinas ESDM Provinsi Jambi
 
 // Configuration
-// Quiz ESDM - Main Application Logic
-// Dinas ESDM Provinsi Jambi
-
-// Configuration
 const CONFIG = {
     // Supabase Configuration
     SUPABASE_URL: 'https://wbgdoiiztuvmkqzqgeql.supabase.co',
@@ -14,7 +10,7 @@ const CONFIG = {
     SYNC_INTERVAL: 2000 // Sync setiap 2 detik
 };
 
-// Initialize Supabase Client - cek apakah sudah ada atau belum
+// Initialize Supabase Client
 let supabaseClient;
 if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
     supabaseClient = window.supabase.createClient(
@@ -51,8 +47,6 @@ const SupabaseSync = {
             return data.map(p => ({
                 id: p.id,
                 nama: p.nama,
-                noHp: p.no_hp,
-                email: p.email,
                 instansi: p.instansi,
                 status: p.status,
                 score: p.score,
@@ -81,8 +75,6 @@ const SupabaseSync = {
                 .from('participants')
                 .insert([{
                     nama: participant.nama,
-                    no_hp: participant.noHp,
-                    email: participant.email,
                     instansi: participant.instansi,
                     status: participant.status || 'waiting',
                     score: participant.score || 0,
@@ -98,8 +90,6 @@ const SupabaseSync = {
             return {
                 id: data.id,
                 nama: data.nama,
-                noHp: data.no_hp,
-                email: data.email,
                 instansi: data.instansi,
                 status: data.status,
                 score: data.score,
@@ -127,8 +117,6 @@ const SupabaseSync = {
             // Transform updates ke format Supabase
             const supabaseUpdates = {};
             if (updates.nama !== undefined) supabaseUpdates.nama = updates.nama;
-            if (updates.noHp !== undefined) supabaseUpdates.no_hp = updates.noHp;
-            if (updates.email !== undefined) supabaseUpdates.email = updates.email;
             if (updates.instansi !== undefined) supabaseUpdates.instansi = updates.instansi;
             if (updates.status !== undefined) supabaseUpdates.status = updates.status;
             if (updates.score !== undefined) supabaseUpdates.score = updates.score;
@@ -150,8 +138,6 @@ const SupabaseSync = {
             return {
                 id: data.id,
                 nama: data.nama,
-                noHp: data.no_hp,
-                email: data.email,
                 instansi: data.instansi,
                 status: data.status,
                 score: data.score,
@@ -229,8 +215,6 @@ const SupabaseSync = {
             return {
                 id: data.id,
                 nama: data.nama,
-                noHp: data.no_hp,
-                email: data.email,
                 instansi: data.instansi,
                 status: data.status,
                 score: data.score,
@@ -247,8 +231,6 @@ const SupabaseSync = {
         }
     }
 };
-
-// ... sisanya sama seperti sebelumnya
 
 // Utility Functions
 const QuizApp = {
@@ -358,7 +340,7 @@ const QuizApp = {
             return;
         }
 
-        let csv = 'No,Nama,No HP,Email,Instansi,Status,Skor,Total Soal,Persentase,Waktu Daftar,Waktu Selesai\n';
+        let csv = 'No,Nama,Instansi,Status,Skor,Total Soal,Persentase,Waktu Daftar,Waktu Selesai\n';
         
         participants.forEach((p, index) => {
             const totalQuestions = p.questions?.length || 0;
@@ -366,8 +348,6 @@ const QuizApp = {
             
             csv += `${index + 1},`;
             csv += `"${p.nama}",`;
-            csv += `"${p.noHp}",`;
-            csv += `"${p.email}",`;
             csv += `"${p.instansi || '-'}",`;
             csv += `"${p.status}",`;
             csv += `${p.score || 0},`;
@@ -436,18 +416,6 @@ const QuizApp = {
         return Math.min(...finishedParticipants.map(p => p.score || 0));
     },
 
-    // Validate phone number
-    validatePhone: function(phone) {
-        const phoneRegex = /^[0-9]{10,13}$/;
-        return phoneRegex.test(phone);
-    },
-
-    // Validate email
-    validateEmail: function(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    },
-
     // Show toast notification
     showToast: function(message, type = 'info') {
         // Simple toast notification
@@ -489,7 +457,7 @@ console.log('Question Bank Size:', typeof questionBank !== 'undefined' ? questio
 
 // Auto-sync from Supabase every interval
 setInterval(async () => {
-    await QuizApp.getParticipants(); // Fetch latest dari Supabase
+    await QuizApp.getParticipants();
 }, CONFIG.SYNC_INTERVAL);
 
 console.log(`Auto-sync enabled: ${CONFIG.SYNC_INTERVAL}ms interval`);
@@ -513,5 +481,3 @@ if (supabaseClient) {
 // Make QuizApp and supabaseClient available globally
 window.QuizApp = QuizApp;
 window.supabaseClient = supabaseClient;
-
-
