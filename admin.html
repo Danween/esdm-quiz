@@ -21,6 +21,25 @@
                     </div>
                 </div>
                 <div class="flex space-x-4">
+                    <!-- Tambahkan di header sebelum tombol Refresh -->
+                    <div class="flex items-center space-x-2 bg-blue-700 px-4 py-2 rounded-lg shadow-md hover:bg-blue-800 transition duration-200">
+                        <label class="text-white text-sm font-semibold flex items-center">
+                            <i class="fas fa-list-ol mr-2"></i>
+                            Default Soal:
+                        </label>
+                        <input 
+                            type="number" 
+                            id="defaultNumQuestions" 
+                            value="7" 
+                            min="1" 
+                            max="30" 
+                            class="w-16 px-2 py-1.5 rounded-md text-center text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-white shadow-inner"
+                        />
+                        <button onclick="setDefaultForAll()" class="bg-white text-blue-600 px-4 py-1.5 rounded-md text-sm font-bold hover:bg-blue-50 active:bg-blue-100 transition duration-200 shadow-sm flex items-center">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Set Semua
+                        </button>
+                    </div>
                     <button onclick="refreshParticipants()" class="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg transition duration-300">
                         <i class="fas fa-sync-alt mr-2"></i>Refresh
                     </button>
@@ -32,7 +51,7 @@
         </div>
     </header>
 
-    <div class="container mx-auto px-6 py-8">
+    <div class="container mx-auto px-20 py-16">
         <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-lg p-6">
@@ -91,8 +110,6 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No HP</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Instansi</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Skor</th>
@@ -101,7 +118,7 @@
                     </thead>
                     <tbody id="participantsTableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                                 <i class="fas fa-inbox text-4xl mb-2"></i>
                                 <p>Belum ada peserta yang terdaftar</p>
                             </td>
@@ -179,14 +196,6 @@
                 <!-- Additional Info -->
                 <div class="bg-gray-50 rounded-xl p-4 space-y-3">
                     <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500"><i class="fas fa-envelope mr-2"></i>Email</span>
-                        <span class="font-medium text-gray-700" id="modalEmail">-</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500"><i class="fas fa-phone mr-2"></i>No. HP</span>
-                        <span class="font-medium text-gray-700" id="modalPhone">-</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-500"><i class="fas fa-building mr-2"></i>Instansi</span>
                         <span class="font-medium text-gray-700" id="modalInstansi">-</span>
                     </div>
@@ -227,6 +236,17 @@
     <script src="questions.js"></script>
     <script src="app.js"></script>
     <script>
+        function setDefaultForAll() {
+            const defaultValue = document.getElementById('defaultNumQuestions').value;
+            const allInputs = document.querySelectorAll('[id^="numQuestions_"]');
+            
+            allInputs.forEach(input => {
+                input.value = defaultValue;
+            });
+            
+            QuizApp.showToast(`Default ${defaultValue} soal diterapkan ke semua peserta`, 'success');
+        }
+
         async function refreshParticipants() {
             try {
                 const participants = await QuizApp.getParticipants();
@@ -242,7 +262,7 @@
                 if (participants.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                                 <i class="fas fa-inbox text-4xl mb-2"></i>
                                 <p>Belum ada peserta yang terdaftar</p>
                             </td>
@@ -258,8 +278,20 @@
                     if (p.status === 'waiting') {
                         statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Menunggu</span>';
                         actionBtn = `
-                            <div class="flex space-x-2">
-                                <button onclick="startQuiz(${p.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold">
+                            <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-1 bg-blue-500 rounded-lg px-2 py-1 border border-gray-200">
+                                    <input 
+                                        type="number" 
+                                        id="numQuestions_${p.id}" 
+                                        value="7" 
+                                        min="1" 
+                                        max="30" 
+                                        class="w-12 px-1 py-1 bg-white border border-gray-300 rounded-md text-center text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="7"
+                                    />
+                                    <span class="text-xs font-medium text-gray-600"></span>
+                                </div>
+                                <button onclick="startQuizWithCustomCount(${p.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm font-semibold">
                                     <i class="fas fa-play mr-1"></i> Mulai
                                 </button>
                                 <button onclick="deleteParticipant(${p.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-300 text-sm">
@@ -288,8 +320,6 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-900">${index + 1}</td>
                             <td class="px-6 py-4 text-sm font-semibold text-gray-900">${p.nama}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">${p.noHp}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">${p.email}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">${p.instansi || '-'}</td>
                             <td class="px-6 py-4">${statusBadge}</td>
                             <td class="px-6 py-4 text-sm font-bold text-blue-600">${p.score || 0}</td>
@@ -303,11 +333,32 @@
             }
         }
 
-        async function startQuiz(participantId) {
+        async function startQuizWithCustomCount(participantId) {
             try {
-                // Generate random questions (7-10)
-                const numQuestions = Math.floor(Math.random() * 4) + 7;
+                // Ambil nilai dari input
+                const inputElement = document.getElementById(`numQuestions_${participantId}`);
+                let numQuestions = parseInt(inputElement.value) || 7;
+                
+                // Validasi jumlah soal
+                if (numQuestions < 1) {
+                    QuizApp.showToast('Jumlah soal minimal 1!', 'error');
+                    inputElement.value = 1;
+                    return;
+                }
+                
+                if (numQuestions > 30) {
+                    QuizApp.showToast('Jumlah soal maksimal 30!', 'error');
+                    inputElement.value = 30;
+                    return;
+                }
+                
+                // Generate random questions sesuai jumlah yang dipilih
                 const selectedQuestions = QuizApp.getRandomQuestions(numQuestions);
+                
+                if (selectedQuestions.length === 0) {
+                    QuizApp.showToast('Gagal mengambil soal dari bank soal', 'error');
+                    return;
+                }
 
                 await QuizApp.updateParticipant(participantId, {
                     status: 'playing',
@@ -320,7 +371,7 @@
 
                 localStorage.setItem('activeParticipantId', participantId);
 
-                QuizApp.showToast('Quiz berhasil dimulai!', 'success');
+                QuizApp.showToast(`Quiz berhasil dimulai dengan ${numQuestions} soal!`, 'success');
                 refreshParticipants();
 
                 // Open display page
@@ -356,27 +407,22 @@
                 document.getElementById('modalTotalQuestions').textContent = totalQuestions;
                 document.getElementById('modalCorrectAnswers').textContent = score;
                 document.getElementById('modalWrongAnswers').textContent = wrong;
-                document.getElementById('modalEmail').textContent = participant.email || '-';
-                document.getElementById('modalPhone').textContent = participant.noHp || '-';
                 document.getElementById('modalInstansi').textContent = participant.instansi || '-';
                 document.getElementById('modalFinishedAt').textContent = participant.finishedAt 
                     ? QuizApp.formatDate(participant.finishedAt) 
                     : '-';
 
                 // Animate score circle
-                const circumference = 2 * Math.PI * 70; // 70 is the radius
+                const circumference = 2 * Math.PI * 70;
                 const offset = circumference - (percentage / 100) * circumference;
                 const scoreCircle = document.getElementById('scoreCircle');
                 
-                // Reset animation
                 scoreCircle.style.strokeDashoffset = circumference;
                 
-                // Show modal
                 const modal = document.getElementById('resultModal');
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
 
-                // Trigger animation after modal is visible
                 setTimeout(() => {
                     scoreCircle.style.strokeDashoffset = offset;
                 }, 100);
@@ -393,14 +439,12 @@
             modal.classList.remove('flex');
         }
 
-        // Close modal when clicking outside
         document.getElementById('resultModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeResultModal();
             }
         });
 
-        // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeResultModal();
@@ -424,7 +468,6 @@
             }
         }
 
-        // Supabase Realtime listener untuk semua perubahan
         const adminChannel = supabaseClient
             .channel('admin-participants')
             .on('postgres_changes', 
@@ -436,15 +479,11 @@
             )
             .subscribe();
 
-        // Cleanup
         window.addEventListener('beforeunload', () => {
             supabaseClient.removeChannel(adminChannel);
         });
 
-        // Auto refresh every 3 seconds (backup)
         setInterval(refreshParticipants, 3000);
-
-        // Initial load
         refreshParticipants();
     </script>
 </body>
